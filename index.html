@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orovo | AI Stack Security Scanner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #0a0a0a;
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+        }
+        .neon-green {
+            color: #39ff14;
+        }
+        .neon-red {
+            color: #ff073a;
+        }
+        .border-neon-green {
+            border-color: #39ff14;
+        }
+        .border-neon-red {
+            border-color: #ff073a;
+        }
+        .bg-neon-green {
+            background-color: #39ff14;
+        }
+        .bg-neon-red {
+            background-color: #ff073a;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="border-b border-gray-800 p-6 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+            <h1 class="text-3xl font-bold tracking-tight">Orovo</h1>
+            <span class="text-sm text-gray-400 mt-1">AI Stack Security Scanner</span>
+        </div>
+    </header>
+
+    <main class="flex-grow container mx-auto px-4 py-12">
+
+        <!-- Hero Section -->
+        <section class="text-center max-w-3xl mx-auto mb-16">
+            <h2 class="text-5xl font-extrabold mb-6">AI APIs Leak Data. <span class="neon-green">Scan Your Stack.</span></h2>
+            <p class="text-xl text-gray-400 mb-10">Orovo scans your AI app attack surfaces for critical vulnerabilities.</p>
+
+            <div id="error-msg" class="hidden mb-4 p-4 border border-neon-red text-neon-red bg-red-900 bg-opacity-20 rounded"></div>
+
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <input type="url" id="scan-url" placeholder="https://your-ai-app.com" class="w-full sm:w-96 px-4 py-3 bg-gray-900 border border-gray-700 rounded text-white focus:outline-none focus:border-neon-green transition-colors" required>
+                <button id="scan-btn" class="px-8 py-3 bg-neon-green text-black font-bold rounded hover:bg-opacity-90 transition-colors">Scan Vulnerabilities</button>
+            </div>
+
+            <!-- Loading Indicator -->
+            <div id="loading" class="hidden mt-8 text-gray-400">Scanning architecture...</div>
+        </section>
+
+        <!-- Results Section (Hidden initially) -->
+        <section id="results-section" class="hidden max-w-4xl mx-auto mb-20 bg-gray-900 border border-neon-red rounded-lg p-8 shadow-2xl">
+            <div class="flex flex-col md:flex-row items-center md:items-start gap-8 mb-10">
+                <div class="text-center md:text-left">
+                    <div class="text-8xl font-black neon-red leading-none mb-2" id="res-grade">F</div>
+                    <div class="text-2xl font-bold" id="res-severity">Severity: Critical</div>
+                    <div class="text-xl text-gray-400" id="res-status">Status: RED</div>
+                </div>
+                <div class="flex-grow">
+                    <h3 class="text-2xl font-bold mb-4 border-b border-gray-700 pb-2">Critical Findings</h3>
+                    <div id="findings-list" class="space-y-4">
+                        <!-- Findings will be injected here -->
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <h3 class="text-2xl font-bold mb-4 border-b border-gray-700 pb-2">Exposed Routes</h3>
+                <div class="flex flex-wrap gap-2" id="routes-list">
+                    <!-- Routes will be injected here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Pricing Section -->
+        <section class="max-w-5xl mx-auto">
+            <h3 class="text-3xl font-bold text-center mb-10">Secure Your Stack Today</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+                <!-- Basic Card -->
+                <div class="bg-gray-900 border border-gray-800 rounded-lg p-8 flex flex-col hover:border-gray-600 transition-colors">
+                    <h4 class="text-2xl font-bold mb-2">Basic</h4>
+                    <div class="text-4xl font-black mb-6">$20<span class="text-lg text-gray-400 font-normal">/mo</span></div>
+                    <ul class="mb-8 space-y-2 text-gray-400 flex-grow">
+                        <li>Basic scanning</li>
+                        <li>Standard reports</li>
+                    </ul>
+                    <button class="checkout-btn w-full py-3 bg-white text-black font-bold rounded hover:bg-gray-200 transition-colors" data-tier="basic">Subscribe to Basic</button>
+                </div>
+
+                <!-- Plus Card -->
+                <div class="bg-gray-900 border border-neon-green rounded-lg p-8 flex flex-col relative transform md:-translate-y-4 shadow-[0_0_15px_rgba(57,255,20,0.2)]">
+                    <div class="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-neon-green text-black px-4 py-1 rounded-full text-sm font-bold">Recommended</div>
+                    <h4 class="text-2xl font-bold mb-2">Plus</h4>
+                    <div class="text-4xl font-black mb-6">$50<span class="text-lg text-gray-400 font-normal">/mo</span></div>
+                    <ul class="mb-6 space-y-2 text-gray-400 flex-grow">
+                        <li>Advanced scanning</li>
+                        <li>Detailed reports</li>
+                        <li>Priority support</li>
+                    </ul>
+
+                    <div class="mb-6 p-3 bg-gray-800 rounded flex items-center justify-between">
+                        <span class="text-sm">+$20/mo Revenue Shield<br><span class="text-xs text-gray-400">(Stop Stripe Bypasses)</span></span>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="shield-plus" class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-neon-green"></div>
+                        </label>
+                    </div>
+
+                    <button class="checkout-btn w-full py-3 bg-neon-green text-black font-bold rounded hover:bg-opacity-90 transition-colors" data-tier="plus">Subscribe to Plus</button>
+                </div>
+
+                <!-- Pro Card -->
+                <div class="bg-gray-900 border border-gray-800 rounded-lg p-8 flex flex-col hover:border-gray-600 transition-colors">
+                    <h4 class="text-2xl font-bold mb-2">Pro</h4>
+                    <div class="text-4xl font-black mb-6">$100<span class="text-lg text-gray-400 font-normal">/mo</span></div>
+                    <ul class="mb-6 space-y-2 text-gray-400 flex-grow">
+                        <li>Continuous scanning</li>
+                        <li>API Access</li>
+                        <li>24/7 Dedicated Support</li>
+                    </ul>
+
+                    <div class="mb-6 p-3 bg-gray-800 rounded flex items-center justify-between">
+                        <span class="text-sm">+$20/mo Revenue Shield<br><span class="text-xs text-gray-400">(Stop Stripe Bypasses)</span></span>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="shield-pro" class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-neon-green"></div>
+                        </label>
+                    </div>
+
+                    <button class="checkout-btn w-full py-3 bg-white text-black font-bold rounded hover:bg-gray-200 transition-colors" data-tier="pro">Subscribe to Pro</button>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="border-t border-gray-800 p-6 text-center text-gray-500 text-sm mt-12">
+        &copy; 2024 Orovo. All rights reserved.
+    </footer>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+
+        // Handle checkout messages in URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const checkoutStatus = urlParams.get('checkout');
+        if (checkoutStatus === 'success') {
+            alert('Subscription successful! Welcome to Orovo.');
+        } else if (checkoutStatus === 'cancelled') {
+            alert('Checkout cancelled.');
+        }
+
+        const scanBtn = document.getElementById('scan-btn');
+        const urlInput = document.getElementById('scan-url');
+        const errorMsg = document.getElementById('error-msg');
+        const loading = document.getElementById('loading');
+        const resultsSection = document.getElementById('results-section');
+
+        const resGrade = document.getElementById('res-grade');
+        const resSeverity = document.getElementById('res-severity');
+        const resStatus = document.getElementById('res-status');
+        const findingsList = document.getElementById('findings-list');
+        const routesList = document.getElementById('routes-list');
+
+        function showError(msg) {
+            errorMsg.textContent = msg;
+            errorMsg.classList.remove('hidden');
+        }
+
+        function hideError() {
+            errorMsg.classList.add('hidden');
+            errorMsg.textContent = '';
+        }
+
+        // Scan functionality
+        scanBtn.addEventListener('click', async () => {
+            const url = urlInput.value.trim();
+            if (!url) {
+                showError('Please enter a valid URL to scan.');
+                return;
+            }
+
+            hideError();
+            resultsSection.classList.add('hidden');
+            loading.classList.remove('hidden');
+            scanBtn.disabled = true;
+
+            try {
+                const response = await fetch('/scan', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ url })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || `Server error: ${response.status}`);
+                }
+
+                // Populate results
+                resGrade.textContent = data.grade;
+                resSeverity.textContent = `Severity: ${data.severity}`;
+                resStatus.textContent = `Status: ${data.status}`;
+
+                // Clear previous
+                findingsList.innerHTML = '';
+                routesList.innerHTML = '';
+
+                data.findings.forEach(finding => {
+                    const div = document.createElement('div');
+                    div.className = 'bg-gray-800 p-4 rounded border-l-4 border-neon-red';
+                    div.innerHTML = `
+                        <h4 class="font-bold text-lg mb-1">${finding.name}</h4>
+                        <p class="text-gray-400 mb-2"><span class="font-semibold text-gray-300">Risk:</span> ${finding.risk}</p>
+                        <p class="text-neon-green text-sm"><span class="font-semibold">Fix:</span> ${finding.recommendation}</p>
+                    `;
+                    findingsList.appendChild(div);
+                });
+
+                data.exposed_routes.forEach(route => {
+                    const span = document.createElement('span');
+                    span.className = 'bg-red-900 bg-opacity-30 text-neon-red border border-neon-red px-3 py-1 rounded text-sm font-mono';
+                    span.textContent = route;
+                    routesList.appendChild(span);
+                });
+
+                resultsSection.classList.remove('hidden');
+
+            } catch (err) {
+                showError(err.message || 'Failed to complete scan.');
+            } finally {
+                loading.classList.add('hidden');
+                scanBtn.disabled = false;
+            }
+        });
+
+        // Checkout functionality
+        const checkoutBtns = document.querySelectorAll('.checkout-btn');
+        checkoutBtns.forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const tier = btn.getAttribute('data-tier');
+                let revenueShield = false;
+
+                if (tier === 'plus') {
+                    revenueShield = document.getElementById('shield-plus').checked;
+                } else if (tier === 'pro') {
+                    revenueShield = document.getElementById('shield-pro').checked;
+                }
+
+                const originalText = btn.textContent;
+                btn.textContent = 'Redirecting...';
+                btn.disabled = true;
+                hideError();
+
+                try {
+                    const response = await fetch('/checkout', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            tier: tier,
+                            revenue_shield: revenueShield
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(data.error || `Checkout failed: ${response.status}`);
+                    }
+
+                    if (data.url) {
+                        window.location.href = data.url;
+                    } else {
+                        throw new Error('No checkout URL returned from server.');
+                    }
+
+                } catch (err) {
+                    showError(err.message);
+                    btn.textContent = originalText;
+                    btn.disabled = false;
+                }
+            });
+        });
+    });
+</script>
+</body>
+</html>
