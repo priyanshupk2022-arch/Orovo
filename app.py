@@ -163,5 +163,36 @@ async def checkout_endpoint(request: Request):
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
 
+
+@app.post("/webhook")
+async def stripe_webhook(request: Request):
+    payload = await request.body()
+    sig_header = request.headers.get("stripe-signature")
+    endpoint_secret = os.environ.get("STRIPE_WEBHOOK_SECRET")
+
+    if not endpoint_secret:
+        return JSONResponse(status_code=400, content={"error": "Webhook secret not configured"})
+
+    try:
+        event = stripe.Webhook.construct_event(
+            payload, sig_header, endpoint_secret
+        )
+    except ValueError as e:
+        # Invalid payload
+        return JSONResponse(status_code=400, content={"error": "Invalid payload"})
+    except stripe.error.SignatureVerificationError as e:
+        # Invalid signature
+        return JSONResponse(status_code=400, content={"error": "Invalid signature"})
+
+    # Handle the event
+    if event['type'] == 'checkout.session.completed':
+        session = event['data']['object']
+        # Fulfill the purchase...
+        print(f"Payment successful for session {session['id']}")
+    else:
+        print(f"Unhandled event type {event['type']}")
+
+    return JSONResponse(status_code=200, content={"status": "success"})
+
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
