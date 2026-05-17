@@ -1,0 +1,3 @@
+## 2024-05-17 - Optimize Rate Limiter Storage
+**Learning:** The `security_middleware` in FastAPI used a list comprehension to filter out old timestamps `[ts for ts in lst if now - ts < 10]`, leading to O(N) overhead and unnecessary allocations per HTTP request.
+**Action:** Replaced the list comprehension with `collections.deque` and a `while` loop using `popleft()`. The operation is now amortized O(1), and since the array is sorted by timestamp naturally, `popleft` is significantly faster than recreating the whole list. Always check for list comprehensions inside frequently called middleware functions.
