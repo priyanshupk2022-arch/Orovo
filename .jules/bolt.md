@@ -1,0 +1,3 @@
+## 2026-05-21 - [FastAPI Middleware: Rate Limit Data Structures]
+**Learning:** [Using O(N) list comprehensions (`[ts for ts in arr if now - ts < threshold]`) to clean up rate limit window queues in high-traffic global middleware creates significant allocation/GC overhead per request, making it an architectural anti-pattern for fast edge handlers.]
+**Action:** [Always use `collections.deque` and amortized `O(1)` `popleft()` operations for sliding-window timestamp removal inside request lifecycles.]
