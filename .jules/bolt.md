@@ -1,0 +1,3 @@
+## 2024-05-24 - Rate Limiting Sliding Window Anti-Pattern
+**Learning:** Found a common Python performance anti-pattern in `app.py`: using a list comprehension (`[ts for ts in lst if now - ts < window]`) to implement a sliding-window rate limit. This operates in O(N) time and involves constant memory allocation/deallocation on *every* request. The application tracks timestamps within the last 10 seconds.
+**Action:** Replace lists with `collections.deque` when tracking time-windowed events in Python, and use `deque.popleft()` in a `while` loop to drop expired events in O(1) time without allocating new arrays. This provides a measurable speedup for API routes under load.
