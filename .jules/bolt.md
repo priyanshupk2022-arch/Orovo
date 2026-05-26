@@ -1,0 +1,3 @@
+## 2024-05-24 - [Array Allocation in High-Throughput Middleware]
+**Learning:** Using list comprehensions for sliding-window rate limiting (`[ts for ts in arr if now - ts < window]`) inside a high-throughput middleware creates a new array in memory on *every* request. In Python, this O(N) allocation and copying can become a performance bottleneck under load compared to modifying a structure in place.
+**Action:** Always use `collections.deque` for sliding windows or queues in high-traffic endpoints/middleware. This allows O(1) amortized removal (`popleft()`) from the start of the collection without reallocating memory for the entire list on every incoming request.
