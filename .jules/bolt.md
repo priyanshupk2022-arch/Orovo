@@ -1,0 +1,3 @@
+## 2024-05-29 - Optimize FastAPI Middleware Rate Limiter
+**Learning:** Sliding-window rate limiters checking timestamps in an array with `[ts for ts in timestamps if now - ts < threshold]` have O(N) complexity and can allocate a new list memory per request. Using `collections.deque` and popping old timestamps via `while timestamps and now - timestamps[0] >= threshold: timestamps.popleft()` improves this to O(1) amortized, reducing latency and memory allocations.
+**Action:** Default to using `collections.deque` when implementing sliding-window functionality across any Python application where timestamp eviction from the left-side is needed.
