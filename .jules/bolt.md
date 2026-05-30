@@ -1,0 +1,3 @@
+## 2024-05-30 - Replace list comprehension with deque for rate limiting
+**Learning:** Using list comprehension `[ts for ts in lst if now - ts < 10]` to clean up old timestamps for a sliding-window rate limiter runs in O(N) time because it recreates the list on every request. This is a performance bottleneck for frequently hit endpoints. By using `collections.deque`, we can achieve O(1) removal of old timestamps by continually calling `popleft()` since timestamps are naturally appended in chronological order.
+**Action:** When implementing sliding-window rate limiters or time-series data cleanups, always use `collections.deque` over lists to avoid O(N) array reconstructions, ensuring amortized O(1) removals.
