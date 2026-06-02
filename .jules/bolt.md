@@ -1,0 +1,3 @@
+## 2024-05-18 - [FastAPI Backend] Asynchronous external API calls
+**Learning:** Using a synchronous API client (like `Groq()`) inside a FastAPI endpoint blocks the event loop threadpool. For endpoints processing potentially large requests or experiencing high traffic, this is a significant bottleneck. Using an asynchronous client (`AsyncGroq()`) allows the endpoint to suspend execution during the I/O wait, freeing up threads to handle other concurrent requests, greatly improving throughput.
+**Action:** Always prefer asynchronous I/O (e.g., `AsyncGroq`, `httpx.AsyncClient`) for network calls within async Python web frameworks (FastAPI, Starlette) to prevent threadpool exhaustion and ensure high concurrency.
