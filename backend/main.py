@@ -1,23 +1,25 @@
 import os
 from fastapi import FastAPI, HTTPException, Response
 from pydantic import BaseModel
-from groq import Groq
+from groq import AsyncGroq
 
 app = FastAPI()
 
 # Make sure GROQ_API_KEY is set in your environment
-client = Groq()
+# Use AsyncGroq to prevent blocking the FastAPI worker threads during network I/O
+client = AsyncGroq()
 
 class PayloadRequest(BaseModel):
     ip: str
     payload: str
 
 @app.post("/scan")
-def scan_payload(request: PayloadRequest):
+async def scan_payload(request: PayloadRequest):
     prompt = f"Analyze this payload. Is it an injection or malicious intent? Reply ONLY with TRUE or FALSE.\n\nPayload: {request.payload}"
 
     try:
-        chat_completion = client.chat.completions.create(
+        # Await the async chat completion call so the event loop can serve other requests
+        chat_completion = await client.chat.completions.create(
             messages=[
                 {
                     "role": "user",
