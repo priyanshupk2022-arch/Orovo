@@ -1,0 +1,3 @@
+## 2026-06-15 - [FastAPI Synchronous I/O Blocking]
+**Learning:** Using synchronous network I/O clients (like `Groq()`) inside FastAPI routes blocks worker threads, which can lead to exhausting the thread pool and severe performance degradation under load.
+**Action:** Always prefer asynchronous clients (like `AsyncGroq()`) combined with `async def` endpoint definitions when building FastAPI endpoints to ensure non-blocking behavior.
