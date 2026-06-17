@@ -1,0 +1,3 @@
+## 2024-06-17 - Avoid synchronous network clients in FastAPI endpoints
+**Learning:** Using a synchronous network client (like `Groq()`) inside a synchronous FastAPI route (`def`) runs the blocking I/O on the main thread pool. Under load, this blocks worker threads, leading to thread pool exhaustion and severe performance degradation for the entire application.
+**Action:** Always prefer asynchronous clients (like `AsyncGroq()`) combined with `async def` endpoint definitions when making network API calls within FastAPI to ensure non-blocking I/O and high concurrency.
