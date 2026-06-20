@@ -1,0 +1,3 @@
+## 2025-06-20 - [Performance bottleneck] Thread Pool Exhaustion with Synchronous Network Calls
+**Learning:** In FastAPI, using synchronous network clients (like `Groq()`) inside routes can block worker threads. When high traffic occurs, these blocking calls exhaust the worker thread pool, preventing the application from handling other requests and severely degrading performance.
+**Action:** Always prefer asynchronous network clients (like `AsyncGroq()`) and define the endpoint with `async def` when building FastAPI endpoints.
