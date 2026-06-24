@@ -35,20 +35,43 @@ async def security_middleware(request: Request, call_next):
 
     # Prompt Guard
     # We only check methods that typically have bodies (POST, PUT, PATCH)
-    body_bytes = b""
     if request.method in ["POST", "PUT", "PATCH"]:
-        body_bytes = await request.body()
-        if body_bytes:
-            body_str = body_bytes.decode('utf-8', errors='ignore').lower()
-            if "ignore previous" in body_str or "system prompt" in body_str:
-                return JSONResponse(status_code=400, content={"error": "Dangerous prompt detected"})
+        original_receive = request._receive
+        body_chunks = []
+        body_size = 0
+        MAX_CHECK_SIZE = 4096
+        dangerous = False
+        prompt_str = ""
 
-    # Ensure downstream request handlers can read the body.
-    # We recreate the receive method using a closure so the request body can be read again.
-    async def receive():
-        return {"type": "http.request", "body": body_bytes}
+        while True:
+            message = await original_receive()
+            body_chunks.append(message)
 
-    request._receive = receive
+            if message["type"] == "http.request":
+                chunk = message.get("body", b"")
+                body_size += len(chunk)
+                prompt_str += chunk.decode("utf-8", errors="ignore").lower()
+
+                if "ignore previous" in prompt_str or "system prompt" in prompt_str:
+                    dangerous = True
+                    break
+
+                if body_size >= MAX_CHECK_SIZE or not message.get("more_body", False):
+                    break
+            else:
+                break
+
+        if dangerous:
+            return JSONResponse(status_code=400, content={"error": "Dangerous prompt detected"})
+
+        # Ensure downstream request handlers can read the body.
+        # We recreate the receive method using a closure so the request body can be read again.
+        async def new_receive():
+            if body_chunks:
+                return body_chunks.pop(0)
+            return await original_receive()
+
+        request._receive = new_receive
 
     response = await call_next(request)
     return response
