@@ -152,7 +152,10 @@ async def checkout_endpoint(request: Request):
         })
 
     try:
-        checkout_session = stripe.checkout.Session.create(
+        # OPTIMIZATION: Use create_async to prevent blocking the async worker thread.
+        # Synchronous network calls in an async route block the FastAPI event loop,
+        # degrading concurrency and performance under load.
+        checkout_session = await stripe.checkout.Session.create_async(
             payment_method_types=['card'],
             line_items=line_items,
             mode='subscription',
