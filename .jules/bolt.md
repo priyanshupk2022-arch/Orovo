@@ -1,0 +1,3 @@
+## 2024-07-03 - Avoid Committing Local Auto-generated Logs
+**Learning:** I accidentally staged an auto-generated `server.log` file that was created during manual API testing. This caused a code review rejection as it cluttered the repository and confused the reviewer regarding the functionality of the code change, as the log contained expected error traces from manual edge-case testing that were misinterpreted as the optimization crashing.
+**Action:** Do not redirect background server output to local files within the repository when testing, or explicitly add them to `.gitignore` or ensure they are cleaned up and unstaged before committing.
