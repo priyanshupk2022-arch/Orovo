@@ -1,0 +1,3 @@
+## 2024-05-18 - Avoid Blocking FastAPI Event Loop with Sync I/O
+**Learning:** Using synchronous I/O methods like `stripe.checkout.Session.create` inside an `async def` endpoint blocks the single-threaded async event loop in FastAPI, causing severe performance degradation and connection timeouts under load. The event loop cannot process other requests while blocked by the network call.
+**Action:** Always use the asynchronous equivalent methods (e.g., `await stripe.checkout.Session.create_async`) when working with network I/O in FastAPI `async def` endpoints. Ensure `httpx` is installed as it is required by the `stripe` library for async features.
