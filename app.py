@@ -4,13 +4,16 @@ import uvicorn
 import os
 import time
 import stripe
+from collections import defaultdict, deque
 
 app = FastAPI()
 
 blacklisted_ips = set()
 
-# Rate limiting storage: { ip: [timestamps] }
-rate_limit_data = {}
+# Optimization: Using a deque in a defaultdict to efficiently remove expired timestamps
+# from the left side in O(1) time instead of rebuilding a list in O(N) time.
+# Rate limiting storage: { ip: deque([timestamps]) }
+rate_limit_data = defaultdict(deque)
 
 @app.middleware("http")
 async def security_middleware(request: Request, call_next):
@@ -22,11 +25,10 @@ async def security_middleware(request: Request, call_next):
 
     # Rate Limiting: Block if > 10 requests within 10 seconds
     now = time.time()
-    if client_ip not in rate_limit_data:
-        rate_limit_data[client_ip] = []
 
     # Filter timestamps to keep only those within the last 10 seconds
-    rate_limit_data[client_ip] = [ts for ts in rate_limit_data[client_ip] if now - ts < 10]
+    while rate_limit_data[client_ip] and now - rate_limit_data[client_ip][0] >= 10:
+        rate_limit_data[client_ip].popleft()
 
     if len(rate_limit_data[client_ip]) >= 10:
         return JSONResponse(status_code=429, content={"error": "Rate limit exceeded"})
