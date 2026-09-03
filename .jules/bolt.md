@@ -1,3 +1,6 @@
 ## 2024-07-07 - Synchronous Network I/O in FastAPI async routes blocks event loop
 **Learning:** Using synchronous clients (like `stripe.checkout.Session.create` or `Groq()`) inside `async def` endpoints in FastAPI blocks the main thread, negating the benefits of asynchronous handling and leading to poor performance/exhausted thread pools.
 **Action:** Always prefer asynchronous clients (like `stripe.checkout.Session.create_async` or `AsyncGroq()`) combined with `async def` endpoint definitions to prevent blocking the event loop.
+## 2024-09-03 - Optimize sliding-window rate limiter with collections.deque
+**Learning:** Using a list comprehension to filter out expired timestamps in a sliding-window rate limiter requires O(N) time complexity where N is the number of requests in the window. This operation occurs on every request. Replacing the list with a `collections.deque` and popping expired timestamps from the left provides an amortized O(1) time complexity for maintaining the window, significantly improving performance under high load.
+**Action:** Always use `collections.deque` for sliding-window or queue implementations where elements are frequently added/removed from the ends, instead of repeatedly allocating new lists via comprehension or slice assignments.
