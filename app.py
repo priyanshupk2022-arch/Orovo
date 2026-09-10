@@ -4,12 +4,13 @@ import uvicorn
 import os
 import time
 import stripe
+from collections import deque
 
 app = FastAPI()
 
 blacklisted_ips = set()
 
-# Rate limiting storage: { ip: [timestamps] }
+# Rate limiting storage: { ip: deque([timestamps]) }
 rate_limit_data = {}
 
 @app.middleware("http")
@@ -23,15 +24,18 @@ async def security_middleware(request: Request, call_next):
     # Rate Limiting: Block if > 10 requests within 10 seconds
     now = time.time()
     if client_ip not in rate_limit_data:
-        rate_limit_data[client_ip] = []
+        rate_limit_data[client_ip] = deque()
 
-    # Filter timestamps to keep only those within the last 10 seconds
-    rate_limit_data[client_ip] = [ts for ts in rate_limit_data[client_ip] if now - ts < 10]
+    # Optimization: Use deque and popleft() for O(1) removal of expired timestamps
+    # instead of O(N) list comprehension
+    client_timestamps = rate_limit_data[client_ip]
+    while client_timestamps and now - client_timestamps[0] >= 10:
+        client_timestamps.popleft()
 
-    if len(rate_limit_data[client_ip]) >= 10:
+    if len(client_timestamps) >= 10:
         return JSONResponse(status_code=429, content={"error": "Rate limit exceeded"})
 
-    rate_limit_data[client_ip].append(now)
+    client_timestamps.append(now)
 
     # Prompt Guard
     # We only check methods that typically have bodies (POST, PUT, PATCH)
