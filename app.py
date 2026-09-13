@@ -4,6 +4,7 @@ import uvicorn
 import os
 import time
 import stripe
+import collections
 
 app = FastAPI()
 
@@ -23,10 +24,13 @@ async def security_middleware(request: Request, call_next):
     # Rate Limiting: Block if > 10 requests within 10 seconds
     now = time.time()
     if client_ip not in rate_limit_data:
-        rate_limit_data[client_ip] = []
+        # Optimization: Use collections.deque for amortized O(1) popleft operations
+        rate_limit_data[client_ip] = collections.deque()
 
-    # Filter timestamps to keep only those within the last 10 seconds
-    rate_limit_data[client_ip] = [ts for ts in rate_limit_data[client_ip] if now - ts < 10]
+    # Optimization: Use a while loop with popleft() instead of an O(N) list comprehension
+    # to efficiently remove expired timestamps in amortized O(1) time
+    while rate_limit_data[client_ip] and now - rate_limit_data[client_ip][0] >= 10:
+        rate_limit_data[client_ip].popleft()
 
     if len(rate_limit_data[client_ip]) >= 10:
         return JSONResponse(status_code=429, content={"error": "Rate limit exceeded"})
